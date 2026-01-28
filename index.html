@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Resepsionis</title>
+<style>
+body{font-family:Arial;background:#eafaf1}
+.card{max-width:600px;margin:20px auto;background:#fff;padding:20px;border-radius:12px}
+input,select{width:100%;padding:6px;margin:5px 0}
+button{background:#2ecc71;color:#fff;border:none;padding:6px 12px;border-radius:6px}
+</style>
+</head>
+<body>
+
+<div class="card">
+<h2>🧾 Meja Resepsionis</h2>
+<div id="list"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+import { getFirestore, collection, onSnapshot, updateDoc, doc }
+from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+const firebaseConfig={
+  apiKey: "AIzaSyCLc7nnPwr-GjGoJqhw-DbYEtfw68X9eso",
+  authDomain: "rssimulator-rjwl.firebaseapp.com",
+  projectId: "rssimulator-rjwl"
+};
+
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+
+const list=document.getElementById("list");
+
+onSnapshot(collection(db,"pasien"),snap=>{
+  list.innerHTML="";
+  snap.forEach(d=>{
+    const p=d.data();
+    if(p.status==="NPC dibuat"){
+      list.innerHTML+=`
+        <div>
+          <b>${p.nama}</b> (${p.umur} th)<br>
+          <input id="keluhan_${d.id}" placeholder="Keluhan pasien">
+          <select id="poli_${d.id}">
+            <option>Umum</option>
+            <option>Gigi</option>
+            <option>Anak</option>
+          </select>
+          <button onclick="daftar('${d.id}')">Daftarkan</button>
+        </div><hr>`;
+    }
+  });
+});
+
+window.daftar = async(id)=>{
+  const keluhan=document.getElementById("keluhan_"+id).value;
+  const poli=document.getElementById("poli_"+id).value;
+  if(!keluhan){alert("Keluhan wajib diisi");return;}
+  await updateDoc(doc(db,"pasien",id),{
+    keluhan,poli,status:"Sudah Terdaftar"
+  });
+};
+</script>
+</body>
+</html>
